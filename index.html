@@ -516,6 +516,12 @@
             border-color: var(--secondary);
         }
 
+        textarea:focus {
+            outline: none;
+            border-color: var(--secondary) !important;
+            box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.1);
+        }
+
         .alert {
             padding: 1rem 1.5rem;
             border-radius: 10px;
@@ -613,7 +619,7 @@
             <div class="tabs" id="mainTabs">
                 <button class="tab active" onclick="showTab('exam')">Hacer Examen</button>
                 <button class="tab" onclick="showTab('history')">Historial</button>
-                <button class="tab hidden" id="adminTab" onclick="showTab('admin')">Panel Admin</button>
+                <button class="tab hidden" id="adminTabBtn" onclick="showTab('admin')">Panel Admin</button>
             </div>
 
             <!-- Exam Tab -->
@@ -747,6 +753,10 @@
                             <option value="D">D</option>
                         </select>
                     </div>
+                    <div class="form-group">
+                        <label>Justificación / Explicación (opcional)</label>
+                        <textarea id="questionExplanation" placeholder="Explica por qué esta respuesta es correcta. Esto ayudará a los estudiantes a comprender mejor." rows="3" style="width: 100%; padding: 0.875rem 1rem; border: 2px solid var(--border); border-radius: 10px; font-size: 1rem; font-family: 'Poppins', sans-serif; resize: vertical;"></textarea>
+                    </div>
                     <button class="btn btn-success" onclick="addQuestion()">Agregar Pregunta</button>
                 </div>
 
@@ -800,35 +810,40 @@
                     text: "¿Cuál es la capital de Francia?",
                     subject: "Geografía",
                     options: ["Londres", "París", "Roma", "Madrid"],
-                    correct: "B"
+                    correct: "B",
+                    explanation: "París es la capital de Francia desde el siglo X. Es conocida como 'La Ciudad de la Luz' y es el centro político, económico y cultural del país."
                 },
                 {
                     id: Date.now() + 2,
                     text: "¿Cuánto es 15 × 8?",
                     subject: "Matemáticas",
                     options: ["100", "110", "120", "130"],
-                    correct: "C"
+                    correct: "C",
+                    explanation: "Para multiplicar 15 × 8, podemos hacer: (10 × 8) + (5 × 8) = 80 + 40 = 120"
                 },
                 {
                     id: Date.now() + 3,
                     text: "¿Quién escribió 'Cien años de soledad'?",
                     subject: "Literatura",
                     options: ["Borges", "Cortázar", "García Márquez", "Vargas Llosa"],
-                    correct: "C"
+                    correct: "C",
+                    explanation: "Gabriel García Márquez escribió 'Cien años de soledad' en 1967. Esta obra maestra del realismo mágico le valió el Premio Nobel de Literatura en 1982."
                 },
                 {
                     id: Date.now() + 4,
                     text: "¿Cuál es el símbolo químico del oro?",
                     subject: "Química",
                     options: ["Go", "Au", "Or", "Gd"],
-                    correct: "B"
+                    correct: "B",
+                    explanation: "El símbolo químico del oro es 'Au', que proviene del latín 'Aurum'. El oro tiene número atómico 79 y es un metal precioso muy valorado."
                 },
                 {
                     id: Date.now() + 5,
                     text: "¿En qué año llegó el hombre a la Luna?",
                     subject: "Historia",
                     options: ["1965", "1967", "1969", "1971"],
-                    correct: "C"
+                    correct: "C",
+                    explanation: "El 20 de julio de 1969, Neil Armstrong y Buzz Aldrin de la misión Apollo 11 se convirtieron en los primeros humanos en pisar la Luna."
                 }
             ];
             questions = samples;
@@ -917,7 +932,7 @@
             document.getElementById('userBadge').textContent = currentUser.name;
 
             if (currentUser.role === 'admin') {
-                document.getElementById('adminTab').classList.remove('hidden');
+                document.getElementById('adminTabBtn').classList.remove('hidden');
                 updateAdminStats();
                 loadQuestionBank();
             }
@@ -953,6 +968,7 @@
             const optionC = document.getElementById('optionC').value;
             const optionD = document.getElementById('optionD').value;
             const correct = document.getElementById('correctAnswer').value;
+            const explanation = document.getElementById('questionExplanation').value;
 
             if (!text || !subject || !optionA || !optionB || !optionC || !optionD) {
                 alert('Por favor completa todos los campos');
@@ -964,7 +980,8 @@
                 text,
                 subject,
                 options: [optionA, optionB, optionC, optionD],
-                correct
+                correct,
+                explanation: explanation || ''
             };
 
             questions.push(newQuestion);
@@ -974,6 +991,10 @@
             document.getElementById('questionText').value = '';
             document.getElementById('questionSubject').value = '';
             document.getElementById('optionA').value = '';
+            document.getElementById('optionB').value = '';
+            document.getElementById('optionC').value = '';
+            document.getElementById('optionD').value = '';
+            document.getElementById('questionExplanation').value = '';
             document.getElementById('optionB').value = '';
             document.getElementById('optionC').value = '';
             document.getElementById('optionD').value = '';
@@ -1006,6 +1027,7 @@
                 <div class="question-item">
                     <h4>${q.text}</h4>
                     <p><strong>Opciones:</strong> A) ${q.options[0]}, B) ${q.options[1]}, C) ${q.options[2]}, D) ${q.options[3]}</p>
+                    ${q.explanation ? `<p style="margin-top: 0.5rem; padding: 0.75rem; background: rgba(34, 211, 238, 0.1); border-left: 3px solid var(--accent); border-radius: 5px;"><strong>💡 Explicación:</strong> ${q.explanation}</p>` : ''}
                     <div class="question-meta">
                         <span>📚 ${q.subject}</span>
                         <span>✅ Correcta: ${q.correct}</span>
@@ -1218,6 +1240,7 @@
                                 </div>
                             `;
                         }).join('')}
+                        ${q.explanation ? `<div style="margin-top: 1rem; padding: 1rem; background: rgba(34, 211, 238, 0.1); border-left: 4px solid var(--accent); border-radius: 8px;"><strong>💡 Explicación:</strong> ${q.explanation}</div>` : ''}
                         <div class="question-meta">
                             <span>${isCorrect ? '✅ Correcto' : '❌ Incorrecto'}</span>
                             ${!isCorrect ? `<span>Tu respuesta: ${userAnswer || 'Sin respuesta'}</span>` : ''}
